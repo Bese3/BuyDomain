@@ -22,7 +22,18 @@ export class PurchaseServiceService {
   
     fs.writeFileSync(this.filePath, JSON.stringify(previousData, null, 2), 'utf-8');
   }
-  async create(createPurchaseServiceDto: CreatePurchaseServiceDto) {
+
+  private updateFile(data: CreatePurchaseServiceDto, verified: boolean): void {
+    const previousData = this.readFile()
+    for (const purData of previousData){
+      if (data.id == purData.id) {
+        purData.verified = verified
+      }
+    }
+    fs.writeFileSync(this.filePath, JSON.stringify(previousData, null, 2), 'utf-8');
+  }
+
+  async initiatePayment(createPurchaseServiceDto: CreatePurchaseServiceDto) {
     const domains = createPurchaseServiceDto.domains.map(domain => domain.name);
     const allDomains = []
 
@@ -69,6 +80,22 @@ export class PurchaseServiceService {
     this.writeFile(newPurchase);
     return {session, ...newPurchase};
     
+  }
+
+  async verifyPayment(purchaseId: string) {
+    const purchased = this.readFile().find(data => data.id == purchaseId);
+    if (purchased && purchased.verified) {
+      return {
+        message: 'Already verified',
+        status: true
+      }
+    }
+    if (purchased) {
+      purchased.verified = true;
+      this.updateFile(purchased, true);
+      return purchased;
+    }
+    return {}
   }
 
   
