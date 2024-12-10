@@ -3,11 +3,11 @@ import { PurchaseServiceService } from './purchase-service.service';
 import { CreatePurchaseServiceDto } from './dto/create-purchase-service.dto';
 import { Response } from 'express';
 
-@Controller('purchase')
+@Controller('purchase-services')
 export class PurchaseServiceController {
   constructor(private readonly purchaseServiceService: PurchaseServiceService) {}
 
-  @Post()
+  @Post('/buy-domain')
   async initiatePayment(@Body() createPurchaseServiceDto: CreatePurchaseServiceDto,
     @Res() res: Response) {
 

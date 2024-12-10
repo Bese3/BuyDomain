@@ -1,18 +1,25 @@
 [
   {
-    "email": "thuiuitr@gmail.com",
+    "email": "thrj@gmail.com",
     "domains": [
       {
-        "name": "domain.com",
-        "price": 10000
+        "name": "besufikad.com",
+        "price": 10690000,
+        "available": true
       },
       {
-        "name": "besufikad.com",
-        "price": 20000
+        "name": "besufikad.org",
+        "price": 14990000,
+        "available": true
+      },
+      {
+        "name": "besufikad.net",
+        "price": 12990000,
+        "available": true
       }
     ],
     "verified": true,
-    "id": "a3639160-e40f-42b1-bf60-650032938eca",
-    "checkoutDate": "Sun Dec 08 2024 18:30:06 GMT+0300 (Moscow Standard Time)"
+    "id": "dce5a186-cd7d-498c-9adf-3312e0a46a1c",
+    "checkoutDate": "Tue Dec 10 2024 22:43:06 GMT+0300 (Moscow Standard Time)"
   }
 ]

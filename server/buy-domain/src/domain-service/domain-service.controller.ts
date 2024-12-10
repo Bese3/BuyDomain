@@ -7,7 +7,7 @@ import { UpdateDomainServiceDto } from './dto/update-domain-service.dto';
 export class DomainServiceController {
   constructor(private readonly domainServiceService: DomainServiceService) {}
 
-  @Get(':domain')
+  @Get('search-domain/:domain')
   findOne(@Param('domain') domain: string) {
     return this.domainServiceService.findOne(domain);
   }

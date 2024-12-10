@@ -22,7 +22,7 @@ export class DomainServiceService {
       .then(resp => resp.json())
       .then(data => {
         if(data.price){
-          data.price = data.price / 10**6;
+          data.price = data.price;
         }
         response = {...data};
       })
