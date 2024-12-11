@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, styled, InputAdornment } from '@mui/material';
+import { TextField, Button, Box, styled, InputAdornment, CircularProgress, LinearProgress } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -25,13 +25,15 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 
 interface DomainSearchProps {
   onSearch: (domain: string) => void;
+  isSearching: boolean;
 }
 
-export default function DomainSearch({ onSearch }: DomainSearchProps) {
+export default function DomainSearch({ onSearch, isSearching }: DomainSearchProps) {
   const [domain, setDomain] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (domain == "") return;
     onSearch(domain);
   };
 
@@ -55,8 +57,10 @@ export default function DomainSearch({ onSearch }: DomainSearchProps) {
         type="submit" 
         variant="contained"
         onClick={handleSubmit}
-        size="large" 
-        sx={{ 
+        size="large"
+        disabled={isSearching}
+        sx={{
+          width: '20%',
           bgcolor: '#1e88e5', 
           color: 'white', 
           '&:hover': { 
@@ -64,7 +68,9 @@ export default function DomainSearch({ onSearch }: DomainSearchProps) {
           } 
         }}
       >
-        Search
+        {
+          isSearching? <CircularProgress size={35}/> : ("Search")
+        }
       </Button>
     </Box>
   );

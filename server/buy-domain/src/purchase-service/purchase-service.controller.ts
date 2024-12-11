@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, Query, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Res, Query, Patch, Get } from '@nestjs/common';
 import { PurchaseServiceService } from './purchase-service.service';
 import { CreatePurchaseServiceDto } from './dto/create-purchase-service.dto';
 import { Response } from 'express';
@@ -21,6 +21,19 @@ export class PurchaseServiceController {
           message: err.response
         })
       }
+  }
+
+  @Get('/coupons')
+  async getCoupons(@Query('coupon') coupon: string, @Query('email') email: string, @Res() res: Response ) {
+    try {
+      const response = await this.purchaseServiceService.verifyCoupon(coupon, email);
+      return res.status(200).json(response)
+    } catch(err) {
+      return res.status(500).json({
+        status: false,
+        message: err.message
+      })
+    }
   }
 
   @Patch()

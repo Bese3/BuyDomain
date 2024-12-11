@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, Button, styled, Box, Zoom } from '@mui/material';
+import { Card, CardContent, Typography, Button, styled, Box, Zoom, CircularProgress } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -9,12 +9,14 @@ const StyledCard = styled(motion(Card))(({ theme }) => ({
   border: '1px solid rgba(255, 255, 255, 0.1)',
   color: 'white',
   textAlign: 'center',
+  width: '30%',
   maxWidth: 500,
   margin: '0 auto',
+  marginLeft: '0',
   position: 'relative',
   transition: 'transform 0.3s ease-in-out',
   '&:hover': {
-    transform: 'scale(1.1)',
+    transform: 'scale(1.08)',
   },
 }));
 
@@ -54,11 +56,11 @@ export default function DomainResult({ domain, onAddToCart, isAdded, available}:
 
   return (
     <Zoom in={true} style={{ transitionDelay: '400ms' }}>
-      <StyledCard sx={{ mt: 1, mb: 4, mr: 2, width: '100%' }}>
+      <StyledCard sx={{ mt: 1, mb: 4, mr: 2, width: '30%'}}>
         <AvailabilityIndicator available={available} />
         <CardContent>
           <Typography variant="h4" component="div" gutterBottom>
-            {domain.name}
+            {domain.name?? "Not Available"}
           </Typography>
           <Typography variant="h5" color="rgba(255, 255, 255, 0.7)" gutterBottom>
             ${domain.price? domain.price / 10**6 : 0}
@@ -71,13 +73,15 @@ export default function DomainResult({ domain, onAddToCart, isAdded, available}:
               disabled={isAdding || isAdded || !available}
               sx={{ 
                 bgcolor: '#1e88e5', 
-                color: 'white', 
+                color: (isAdded || isAdding || !available)? "white": "white", 
                 '&:hover': { 
                   bgcolor: '#1565c0' 
                 } 
               }}
             >
-              Add to Cart
+              {
+                isAdded? "Added": isAdding? <CircularProgress size={28} />: !available? "Not Available" : "Add to Cart"
+              }
             </Button>
             <AnimatePresence>
               {isAdding && (

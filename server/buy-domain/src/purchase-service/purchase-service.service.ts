@@ -9,10 +9,16 @@ import { v4 as uuid } from 'uuid';
 export class PurchaseServiceService {
   constructor(@Inject('STRIPE_CLIENT') private stripe: Stripe) {}
   private filePath = path.join(__dirname, '../../data/purchaseHistory.json');
+  private couponFilePath = path.join(__dirname, '../../data/purchaseHistory.json')
 
   private readFile(): CreatePurchaseServiceDto[] {
     const data = fs.readFileSync(this.filePath, 'utf-8');
     return JSON.parse(data || '[]');
+  }
+
+  private getCouponFile() {
+      const data = fs.readFileSync(this.couponFilePath, 'utf-8');
+      return JSON.parse(data || '[]');
   }
 
   private writeFile(data: CreatePurchaseServiceDto): void {
@@ -80,6 +86,32 @@ export class PurchaseServiceService {
     this.writeFile(newPurchase);
     return {session, ...newPurchase};
     
+  }
+
+  async verifyCoupon(coupon: string, email: string) {
+        const counpons = this.getCouponFile();
+        for (const coup of counpons) {
+          if (coup.name != coupon)
+              continue;
+          if (!coup.alreadUsedEmails.includes(email)) {
+            return {
+              status: true,
+              discount: coup.discount,
+              message: 'coupon added',
+            }
+          } else {
+            return {
+              status: false,
+              discount: 0,
+              message: 'counpon alread used!'
+            }
+          }
+        }
+        return {
+          status: false,
+          discount: 0,
+          message: 'Invalid coupon!'
+        }
   }
 
   async verifyPayment(purchaseId: string) {
