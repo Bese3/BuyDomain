@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 export class PurchaseServiceService {
   constructor(@Inject('STRIPE_CLIENT') private stripe: Stripe) {}
   private filePath = path.join(__dirname, '../../data/purchaseHistory.json');
-  private couponFilePath = path.join(__dirname, '../../data/purchaseHistory.json')
+  private couponFilePath = path.join(__dirname, '../../data/coupons.json')
 
   private readFile(): CreatePurchaseServiceDto[] {
     const data = fs.readFileSync(this.filePath, 'utf-8');
@@ -94,12 +94,23 @@ export class PurchaseServiceService {
           if (coup.name != coupon)
               continue;
           if (!coup.alreadUsedEmails.includes(email)) {
-            return {
-              status: true,
-              discount: coup.discount,
-              message: 'coupon added',
-            }
+              if(coup.deductByPerc) {
+                return {
+                  status: true,
+                  deductByPerc: true,
+                  percentage: coup.percentage,
+                  message: "coupon added"
+                }
+              }
+
+              return {
+                status: true,
+                discount: coup.price,
+                message: 'coupon added',
+              }
+
           } else {
+
             return {
               status: false,
               discount: 0,
@@ -107,6 +118,7 @@ export class PurchaseServiceService {
             }
           }
         }
+
         return {
           status: false,
           discount: 0,

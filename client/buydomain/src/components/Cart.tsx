@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Drawer,
   List,
@@ -12,7 +12,9 @@ import {
   TextField,
   Box,
   Alert,
+  CircularProgress,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
@@ -30,16 +32,86 @@ interface CartProps {
 
 export default function Cart({ open, onClose, items, onRemove }: CartProps) {
   const [coupon, setCoupon] = useState<string>("");
+  const [totalPrice, setTotalPrice] = useState<number>(0);
   const [checkingOut, setCheckingOut] = useState<boolean>(false);
   const [couponAdded, setCouponAdded] = useState<boolean>(false);
+  const [isCouponAdding, setIsCouponAdding] = useState<boolean>(false);
   const [counponAddedMessage, setCouponAddedMessage] = useState<string>("")
+  const [couponErrorMessage, setCouponErrorMessage] = useState<string>("")
+  const [discounted, setDiscounted] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const total = items.reduce((sum, item) => sum + item.price, 0) / 10**6;
+  console.log(totalPrice)
+
+  const handleCartClose = () => {
+    setCouponAddedMessage("");
+    setCouponErrorMessage("");
+    setErrorMessage("");
+    onClose()
+  }
+
+  const handleCouponUpdate = () => {
+    if (!coupon || coupon === ""){
+      setCouponErrorMessage("Coupon is needed");
+      return;
+    }
+    if (!email || email === ""  || !email.includes("@") || !email.includes(".")) {
+      setErrorMessage("Email is needed");
+      return;
+    }
+    setIsCouponAdding(true);
+    fetch(`http://localhost:3001/purchase-services/coupons?coupon=${coupon}&email=${email}`,
+      {
+        method: 'GET',
+      }
+    )
+    .then(async (res) => {
+      const mess = await res.json()
+      console.log(mess);
+      if (!res.ok){
+        throw new Error(mess.message?? "error adding coupon")
+      }
+      if (mess.status) return mess;
+      throw new Error(mess.message)
+    })
+    .then(data => {
+      setIsCouponAdding(false);
+      setCouponAdded(true);
+      setCouponAddedMessage(data.message);
+      if (data.deductByPerc?? false) {
+        const value = (total - (data.percentage * total)).toFixed(2)
+        setDiscounted(data.percentage * total)
+        setTotalPrice(value)
+        return;
+      }
+      const value = (total - data.discount).toFixed(2);
+      setDiscounted(data.discount);
+      setTotalPrice(value)
+
+    })
+    .catch(err => {
+      setIsCouponAdding(false);
+      setCouponErrorMessage(err.message);
+    })
+  }
+
+  useEffect(() => {
+    if (coupon && coupon != "") {
+      handleCouponUpdate()
+    }
+  }, [items])
+
+  const handleCloseCoupon = () => { 
+    setCouponAdded(false);
+    setCouponAddedMessage("");
+    setCoupon("");
+
+  }
   
   const handleBuy = () => {
-    setCheckingOut(true);
     if (!email || email === ""  || !email.includes("@") || !email.includes(".")) return;
+    setCheckingOut(true);
     fetch(`http://localhost:3001/purchase-services/buy-domain`,
       {
         method: 'POST',
@@ -74,7 +146,7 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
   }
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose}>
+    <Drawer anchor="right" open={open} onClose={handleCartClose}>
       <List sx={{ width: '100%' }}>
         <ListItem>
           <Typography variant="h6">Shopping Cart</Typography>
@@ -91,44 +163,77 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
           </ListItem>
         ))}
         <Divider variant='middle' />
-        <ListItem>
-          <Typography variant="subtitle1" sx={{textDecoration: 'line-through'}}>{total}</Typography>
+        <ListItem sx={{display: 'flex', flexDirection: 'row'}}>
+          <Typography variant="subtitle1">Total: </Typography>
+          <Typography variant="subtitle1" sx={{textDecoration: couponAdded? 'line-through': 'none', ml: 1}}>${total}</Typography>
+          {couponAdded &&
+           <><Typography variant='subtitle2' sx={{mb: 1.5}}>-{discounted}</Typography><Typography variant="subtitle1" sx={{ ml: 3 }}>${totalPrice}</Typography></>}
         </ListItem>
       </List>
       <Box sx={{display: 'flex', m: 3}}>
-         {
-          counponAddedMessage &&
-                  <Alert severity='success' onClick={() => setCouponAddedMessage("")}>
-                      {counponAddedMessage}
-                  </Alert>
-         }
-         <TextField
-           label="Coupon"
-           size='small'
-           value={coupon}
-           onChange={(e) => setCoupon(e.target.value)}
-          />
-          <Button variant='contained' sx={{
+        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+            {
+              counponAddedMessage &&
+                      <Alert severity='success' sx={{width: '86%', mb: 2}} onClick={() => setCouponAddedMessage("")}>
+                          {counponAddedMessage}
+                      </Alert>
+            }
+            {
+              couponErrorMessage &&
+                      <Alert severity='error' sx={{width: '86%', mb: 2}} onClick={() => setCouponErrorMessage("")}>
+                          {couponErrorMessage}
+                      </Alert>
+            }
+            <TextField
+              label="Coupon"
+              size='small'
+              value={coupon}
+              disabled={couponAdded || isCouponAdding}
+              onChange={(e) => setCoupon(e.target.value)}
+              />
+          </Box>
+          <Button variant='contained' onClick={couponAdded? handleCloseCoupon : handleCouponUpdate} sx={{
             ml: 6,
-            mr: 1
-           }}>
-            Apply
+            mr: 1,
+            maxHeight: (couponErrorMessage || counponAddedMessage)? '45%': '100%',
+            mt: (couponErrorMessage || counponAddedMessage)? 7.6: 0
+           }}
+           size='small'
+           disabled={isCouponAdding}
+           >
+            {
+              isCouponAdding? <CircularProgress size={30} />: couponAdded? <CloseIcon/> : "Apply"
+            }
           </Button>
       </Box>
-      <Box sx={{display: 'flex', m: 3, mt: 0}}>
-         <TextField
-           label="Email"
-           size='small'
-           type='email'
-           value={email}
-           onChange={(e) => setEmail(e.target.value)}
-          />
+      <Box sx={{display: 'flex', m: 3, mt: 0, mb: 0}}>
+         <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+            {
+              errorMessage &&
+                      <Alert severity='error' sx={{width: '70%', mb: 2}} onClick={() => setErrorMessage("")}>
+                          {errorMessage}
+                      </Alert>
+            }
+            <TextField
+              label="Email"
+              size='small'
+              type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Box>
           <Button variant='contained' onClick={handleBuy} sx={{
             ml: 6,
-            mr: 1
-           }}>
-            Buy
-            <KeyboardDoubleArrowRightIcon/>
+            mr: 1,
+            maxHeight: errorMessage? '40%': '100%',
+            mt: errorMessage? 10: 0,
+            // marginLeft: errorMessage? "" : 6
+           }}
+           disabled={checkingOut || items.length <= 0}
+           >
+            {
+              checkingOut? <CircularProgress size={30}/> : (<>Buy<KeyboardDoubleArrowRightIcon/></>)
+            }
           </Button>
       </Box>
 

@@ -1,0 +1,10 @@
+[
+    {
+        "name": "WGFree",
+        "alreadUsedEmails": [
+
+        ],
+        "price": 5,
+        "deductByPerc": false
+    }
+]
