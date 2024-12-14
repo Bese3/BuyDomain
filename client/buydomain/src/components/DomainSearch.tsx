@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, styled, InputAdornment, CircularProgress, LinearProgress } from '@mui/material';
+import { TextField, Button, Box, styled, InputAdornment, CircularProgress } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -33,7 +33,7 @@ export default function DomainSearch({ onSearch, isSearching }: DomainSearchProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (domain == "") return;
+    if (domain === "") return;
     onSearch(domain);
   };
 

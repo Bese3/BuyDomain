@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
-import { Container, AppBar, Toolbar, Typography, Badge, IconButton, Box, Grid, Button, Alert } from '@mui/material';
+import { Container, AppBar, Toolbar, Typography, Badge, IconButton, Box, Button, Alert } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
 import DomainSearch from '../components/DomainSearch.tsx';
@@ -43,6 +44,7 @@ export default function DomainPurchase() {
   const [searchResult, setSearchResult] = useState<Domain[] | null>(null);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const navigate = useNavigate()
   
   
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -77,7 +79,6 @@ export default function DomainPurchase() {
         }, 10000);
     })
   };
-console.log(searchResult)
   const addToCart = (domain: Domain) => {
     setCart([...cart, domain]);
   };
@@ -85,6 +86,8 @@ console.log(searchResult)
   const removeFromCart = (domainName: string) => {
     setCart(cart.filter(item => item.name !== domainName));
   };
+  // const navigate = useNavigate()
+
 
   return (
     <BackgroundContainer>
@@ -102,7 +105,7 @@ console.log(searchResult)
       </StyledAppBar>
       <ContentContainer maxWidth="lg" sx={{width: '100%'}}>
         <HeroSection>
-          <Typography variant="h2" component="h1" gutterBottom>
+          <Typography id='finder' variant="h2" component="h1" gutterBottom>
             Find Your Perfect Domain
           </Typography>
           <Typography variant="h5" component="p" gutterBottom>
@@ -137,6 +140,7 @@ console.log(searchResult)
             variant="contained"
             size="large"
             startIcon={<SearchIcon />}
+            onClick={() => navigate("#finder")}
             sx={{
               mt: 2,
               bgcolor: '#1e88e5',

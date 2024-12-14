@@ -1,25 +1,15 @@
 [
   {
-    "email": "thrj@gmail.com",
+    "email": "mkdmklm@gmail.com",
     "domains": [
       {
-        "name": "besufikad.com",
+        "name": "eyonai.com",
         "price": 10690000,
-        "available": true
-      },
-      {
-        "name": "besufikad.org",
-        "price": 14990000,
-        "available": true
-      },
-      {
-        "name": "besufikad.net",
-        "price": 12990000,
         "available": true
       }
     ],
     "verified": true,
-    "id": "dce5a186-cd7d-498c-9adf-3312e0a46a1c",
-    "checkoutDate": "Tue Dec 10 2024 22:43:06 GMT+0300 (Moscow Standard Time)"
+    "id": "dbcae4ad-0054-4b41-94e1-189d3945a675",
+    "checkoutDate": "Sat Dec 14 2024 20:50:30 GMT+0300 (Moscow Standard Time)"
   }
 ]

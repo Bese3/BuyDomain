@@ -42,7 +42,6 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const total = items.reduce((sum, item) => sum + item.price, 0) / 10**6;
-  console.log(totalPrice)
 
   const handleCartClose = () => {
     setCouponAddedMessage("");
@@ -53,6 +52,7 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
 
   const handleCouponUpdate = () => {
     if (!coupon || coupon === ""){
+      setCouponAddedMessage("");
       setCouponErrorMessage("Coupon is needed");
       return;
     }
@@ -79,9 +79,11 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
       setIsCouponAdding(false);
       setCouponAdded(true);
       setCouponAddedMessage(data.message);
+      setCouponErrorMessage("");  
       if (data.deductByPerc?? false) {
-        const value = (total - (data.percentage * total)).toFixed(2)
-        setDiscounted(data.percentage * total)
+        console.log(total)
+        const value = (total - ((data.percentage / 100) * total)).toFixed(2)
+        setDiscounted((data.percentage * total / 100).toFixed(2))
         setTotalPrice(value)
         return;
       }
@@ -92,12 +94,13 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
     })
     .catch(err => {
       setIsCouponAdding(false);
+      setCouponAddedMessage("");
       setCouponErrorMessage(err.message);
     })
   }
 
   useEffect(() => {
-    if (coupon && coupon != "") {
+    if (coupon && coupon !== "") {
       handleCouponUpdate()
     }
   }, [items])
@@ -112,7 +115,7 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
   const handleBuy = () => {
     if (!email || email === ""  || !email.includes("@") || !email.includes(".")) return;
     setCheckingOut(true);
-    fetch(`http://localhost:3001/purchase-services/buy-domain`,
+    fetch(`http://localhost:3001/purchase-services/buy-domain?coupon=${coupon?? null}`,
       {
         method: 'POST',
         headers: {
@@ -124,11 +127,13 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
         })
       }
     )
-    .then(res=> {
+    .then(async res=> {
       if(res.ok) {
         return res.json()
       }
-      throw new Error(`${res.status} ${res.statusText}`)
+      const mess = await res.json()
+      console.log(mess);
+      throw new Error(mess.message)
     })
     .then(data => {
       setCheckingOut(false);
@@ -167,7 +172,7 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
           <Typography variant="subtitle1">Total: </Typography>
           <Typography variant="subtitle1" sx={{textDecoration: couponAdded? 'line-through': 'none', ml: 1}}>${total}</Typography>
           {couponAdded &&
-           <><Typography variant='subtitle2' sx={{mb: 1.5}}>-{discounted}</Typography><Typography variant="subtitle1" sx={{ ml: 3 }}>${totalPrice}</Typography></>}
+           <><Typography variant='subtitle2' sx={{mb: 1.5}}>-{discounted}</Typography><Typography variant="subtitle1" sx={{ ml: 3 }}>${(totalPrice > 0)? totalPrice: 0}</Typography></>}
         </ListItem>
       </List>
       <Box sx={{display: 'flex', m: 3}}>
@@ -210,7 +215,7 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
          <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
             {
               errorMessage &&
-                      <Alert severity='error' sx={{width: '70%', mb: 2}} onClick={() => setErrorMessage("")}>
+                      <Alert severity='error' sx={{width: '70%', mb: 2, overflow: 'hidden'}} onClick={() => setErrorMessage("")}>
                           {errorMessage}
                       </Alert>
             }

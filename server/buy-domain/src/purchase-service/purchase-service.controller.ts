@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Res, Query, Patch, Get } from '@nestjs/common';
+import { Controller, Post, Body, Res, Query, Patch, Get, Headers, Req } from '@nestjs/common';
 import { PurchaseServiceService } from './purchase-service.service';
 import { CreatePurchaseServiceDto } from './dto/create-purchase-service.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('purchase-services')
 export class PurchaseServiceController {
@@ -9,10 +9,11 @@ export class PurchaseServiceController {
 
   @Post('/buy-domain')
   async initiatePayment(@Body() createPurchaseServiceDto: CreatePurchaseServiceDto,
-    @Res() res: Response) {
+                        @Res() res: Response,
+                        @Query('coupon') coupon: string, @Req() req: Request) {
 
       try {
-        const response = await this.purchaseServiceService.initiatePayment(createPurchaseServiceDto);
+        const response = await this.purchaseServiceService.initiatePayment(createPurchaseServiceDto, req.body.email, coupon);
         return res.status(201).json(response)
       } catch(err) {
         console.log(err)
@@ -37,10 +38,10 @@ export class PurchaseServiceController {
   }
 
   @Patch()
-    async verifyPayment(@Query('purchase_id') purchaseId: string,
+    async verifyPayment(@Query('purchase_id') purchaseId: string, @Query('session_id') session: string,
     @Res() res: Response) {
       try {
-        const response = await this.purchaseServiceService.verifyPayment(purchaseId);
+        const response = await this.purchaseServiceService.verifyPayment(purchaseId, session);
         return res.status(201).json(response)
       } catch(err) {
         return res.status(500).json({
@@ -48,5 +49,20 @@ export class PurchaseServiceController {
         })
       }
     }
+
+  @Post('/webhook')
+  async webhook(@Res() res: Response,
+                @Headers('stripe-signature') signature: string,
+                @Req() req: Request){
+    try {
+      const response = await this.purchaseServiceService.webhook(req, signature)
+      return res.status(200).json(response)
+    } catch(err) {
+      return res.status(500).json({
+        status: false,
+        message: err.message
+      })
+    }
+  }
 
 }

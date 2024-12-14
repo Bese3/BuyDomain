@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, Button, styled, Box, Zoom, CircularProgress } from '@mui/material';
+import { Card, CardContent, Typography, Button, styled, Box, Zoom, CircularProgress, Tooltip } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -57,7 +57,9 @@ export default function DomainResult({ domain, onAddToCart, isAdded, available}:
   return (
     <Zoom in={true} style={{ transitionDelay: '400ms' }}>
       <StyledCard sx={{ mt: 1, mb: 4, mr: 2, width: '30%'}}>
-        <AvailabilityIndicator available={available} />
+        <Tooltip title={available? "Available to buy" : "Not avaiable"} arrow>
+          <AvailabilityIndicator available={available} />
+        </Tooltip>
         <CardContent>
           <Typography variant="h4" component="div" gutterBottom>
             {domain.name?? "Not Available"}
