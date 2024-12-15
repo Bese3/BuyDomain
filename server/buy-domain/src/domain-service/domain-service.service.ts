@@ -27,7 +27,6 @@ export class DomainServiceService {
         response = {...data};
       })
       .catch(err => {
-        console.log(err)
       })
     return response;
   }

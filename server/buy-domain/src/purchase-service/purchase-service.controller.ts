@@ -16,7 +16,6 @@ export class PurchaseServiceController {
         const response = await this.purchaseServiceService.initiatePayment(createPurchaseServiceDto, req.body.email, coupon);
         return res.status(201).json(response)
       } catch(err) {
-        console.log(err)
         return res.status(err.status).json({
           status: false,
           message: err.response
@@ -37,11 +36,11 @@ export class PurchaseServiceController {
     }
   }
 
-  @Patch()
-    async verifyPayment(@Query('purchase_id') purchaseId: string, @Query('session_id') session: string,
+  @Patch('/verify-payement')
+    async verifyPayment(@Query('purchase_id') purchaseId: string,
     @Res() res: Response) {
       try {
-        const response = await this.purchaseServiceService.verifyPayment(purchaseId, session);
+        const response = await this.purchaseServiceService.verifyPayment(purchaseId);
         return res.status(201).json(response)
       } catch(err) {
         return res.status(500).json({

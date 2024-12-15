@@ -6,8 +6,8 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-  @IsString()
-  domain: string;
+  @IsArray()
+  domains: Array<string>;
 
   @IsDateString()
   purchaseDate: string;

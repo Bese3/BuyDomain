@@ -61,14 +61,13 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
       return;
     }
     setIsCouponAdding(true);
-    fetch(`http://localhost:3001/purchase-services/coupons?coupon=${coupon}&email=${email}`,
+    fetch(`${process.env.REACT_APP_SERVER_URL}/purchase-services/coupons?coupon=${coupon}&email=${email}`,
       {
         method: 'GET',
       }
     )
     .then(async (res) => {
       const mess = await res.json()
-      console.log(mess);
       if (!res.ok){
         throw new Error(mess.message?? "error adding coupon")
       }
@@ -81,15 +80,14 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
       setCouponAddedMessage(data.message);
       setCouponErrorMessage("");  
       if (data.deductByPerc?? false) {
-        console.log(total)
         const value = (total - ((data.percentage / 100) * total)).toFixed(2)
-        setDiscounted((data.percentage * total / 100).toFixed(2))
-        setTotalPrice(value)
+        setDiscounted(Number((data.percentage * total / 100).toFixed(2)))
+        setTotalPrice(Number(value))
         return;
       }
       const value = (total - data.discount).toFixed(2);
       setDiscounted(data.discount);
-      setTotalPrice(value)
+      setTotalPrice(Number(value))
 
     })
     .catch(err => {
@@ -115,7 +113,7 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
   const handleBuy = () => {
     if (!email || email === ""  || !email.includes("@") || !email.includes(".")) return;
     setCheckingOut(true);
-    fetch(`http://localhost:3001/purchase-services/buy-domain?coupon=${coupon?? null}`,
+    fetch(`${process.env.REACT_APP_SERVER_URL}/purchase-services/buy-domain?coupon=${coupon?? null}`,
       {
         method: 'POST',
         headers: {
@@ -132,12 +130,10 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
         return res.json()
       }
       const mess = await res.json()
-      console.log(mess);
       throw new Error(mess.message)
     })
     .then(data => {
       setCheckingOut(false);
-      console.log(data)
       window.location.href = data.session.url;
     })
     .catch(err => {
@@ -146,7 +142,6 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
       setTimeout(() => {
         setErrorMessage("");
       }, 10000);
-      console.log(err)
     })
   }
 
@@ -211,7 +206,7 @@ export default function Cart({ open, onClose, items, onRemove }: CartProps) {
             }
           </Button>
       </Box>
-      <Box sx={{display: 'flex', m: 3, mt: 0, mb: 0}}>
+      <Box component="form" sx={{display: 'flex', m: 3, mt: 0, mb: 0}}>
          <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
             {
               errorMessage &&

@@ -3,6 +3,8 @@ import { Card, CardContent, Typography, Button, styled, Box, Zoom, CircularProgr
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
+
 const StyledCard = styled(motion(Card))(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.05)',
   backdropFilter: 'blur(10px)',

@@ -1,6 +1,6 @@
 import React, { useState, } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { styled } from '@mui/material/styles';
+
 import { Container, AppBar, Toolbar, Typography, Badge, IconButton, Box, Button, Alert } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
@@ -8,19 +8,13 @@ import DomainSearch from '../components/DomainSearch.tsx';
 import DomainResult from '../components/DomainResult.tsx';
 import Cart from '../components/Cart.tsx';
 import Features from '../components/Features.tsx';
+import { styled } from '@mui/material/styles';
 
 interface Domain {
   name: string;
   price: number;
   available: boolean;
 }
-
-const BackgroundContainer = styled(Box)(({ theme }) => ({
-  minHeight: '100vh',
-  background: `
-    radial-gradient(circle at bottom right, #0a24, #000015)
-  `,
-}));
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   background: 'rgba(255, 255, 255, 0.1)',
@@ -53,7 +47,7 @@ export default function DomainPurchase() {
 
   const handleSearch = (domain: string) => {
     setIsSearching(true);
-    fetch(`http://localhost:3001/domain/search-domain/${domain}`,{
+    fetch(`${process.env.REACT_APP_SERVER_URL}/domain/search-domain/${domain}`,{
       method: 'GET',
     })
     .then((res) => {
@@ -86,24 +80,23 @@ export default function DomainPurchase() {
   const removeFromCart = (domainName: string) => {
     setCart(cart.filter(item => item.name !== domainName));
   };
-  // const navigate = useNavigate()
 
 
   return (
-    <BackgroundContainer>
+      <>
       <StyledAppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'white' }}>
-            DomainFinder
-          </Typography>
-          <IconButton color="inherit" onClick={() => setIsCartOpen(true)}>
-            <Badge badgeContent={cart.length} color="secondary">
-              <ShoppingCartIcon />
-            </Badge>
-          </IconButton>
-        </Toolbar>
-      </StyledAppBar>
-      <ContentContainer maxWidth="lg" sx={{width: '100%'}}>
+      <Toolbar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'white' }} onClick={() => navigate('/')}>
+          DomainMaster
+        </Typography>
+        <IconButton color="inherit" onClick={() => setIsCartOpen(true)}>
+          <Badge badgeContent={cart.length} color="secondary">
+            <ShoppingCartIcon />
+          </Badge>
+        </IconButton>
+      </Toolbar>
+    </StyledAppBar>
+    <ContentContainer maxWidth="lg" sx={{ width: '100%' }}>
         <HeroSection>
           <Typography id='finder' variant="h2" component="h1" gutterBottom>
             Find Your Perfect Domain
@@ -119,46 +112,23 @@ export default function DomainPurchase() {
                 mb: 2
               }}>
                 {errorMessage}
-              </Alert>
-            }
+              </Alert>}
             <DomainSearch onSearch={handleSearch} isSearching={isSearching} />
           </Box>
         </HeroSection>
-        <Box sx={{display: 'flex', width: '100%', flexWrap: 'wrap', justifyContent: 'left'}}>
-            {searchResult && 
-                  searchResult.map(res=> {
-                      return (<DomainResult domain={res} onAddToCart={addToCart} isAdded={addedCartNames.includes(res.name)} available={res.available} />)
-                  })
-            }
-        </Box>
-        <Features />
-        <Box sx={{ mt: 8, textAlign: 'center' }}>
-          <Typography variant="h4" component="h2" gutterBottom sx={{ color: 'white' }}>
-            Ready to get started?
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<SearchIcon />}
-            onClick={() => navigate("#finder")}
-            sx={{
-              mt: 2,
-              bgcolor: '#1e88e5',
-              color: 'white',
-              '&:hover': { bgcolor: '#1565c0' }
-            }}
-          >
-            Search for your domain now
-          </Button>
+        <Box sx={{ display: 'flex', width: '100%', flexWrap: 'wrap', justifyContent: 'left' }}>
+          {searchResult &&
+            searchResult.map(res => {
+              return (<DomainResult domain={res} onAddToCart={addToCart} isAdded={addedCartNames.includes(res.name)} available={res.available} />);
+            })}
         </Box>
       </ContentContainer>
       <Cart
         open={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         items={cart}
-        onRemove={removeFromCart}
-      />
-    </BackgroundContainer>
+        onRemove={removeFromCart} />
+        </>
   );
 }
 

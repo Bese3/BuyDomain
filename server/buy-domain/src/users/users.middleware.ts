@@ -7,9 +7,6 @@ export class ValidateUser implements NestMiddleware {
     if (!req.body.email) {
       return res.status(400).json({ message: 'email is required', status: false });
     }
-    if (!req.body.domain) {
-        return res.status(400).json({ message: 'domain name is required', status: false });
-      }
     next();
   }
 }

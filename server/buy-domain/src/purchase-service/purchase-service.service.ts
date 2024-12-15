@@ -13,6 +13,7 @@ export class PurchaseServiceService implements OnModuleInit {
                 private configService: ConfigService) {}
 
   private readonly filePath = path.join(__dirname, '../../data/purchaseHistory.json');
+  private readonly userfilePath = path.join(__dirname, '../../data/userDomains.json')
   private readonly couponFilePath = path.join(__dirname, '../../data/coupons.json')
 
   async onModuleInit() {
@@ -39,8 +40,8 @@ export class PurchaseServiceService implements OnModuleInit {
     return toStoreCoup;
   }
 
-  private readFile(): CreatePurchaseServiceDto[] {
-    const data = fs.readFileSync(this.filePath, 'utf-8');
+  private readFile(path): CreatePurchaseServiceDto[] {
+    const data = fs.readFileSync(path, 'utf-8');
     return JSON.parse(data || '[]');
   }
 
@@ -54,7 +55,7 @@ export class PurchaseServiceService implements OnModuleInit {
   }
 
   private writeFile(data: CreatePurchaseServiceDto): void {
-    const previousData = this.readFile();
+    const previousData = this.readFile(this.filePath);
 
     previousData.push(data);
   
@@ -62,10 +63,11 @@ export class PurchaseServiceService implements OnModuleInit {
   }
 
   private updateFile(data: CreatePurchaseServiceDto, verified: boolean): void {
-    const previousData = this.readFile()
+    const previousData = this.readFile(this.filePath)
     for (const purData of previousData){
       if (data.id == purData.id) {
         purData.verified = verified
+        purData.purchasedDate = (new Date()).toString()
       }
     }
     fs.writeFileSync(this.filePath, JSON.stringify(previousData, null, 2), 'utf-8');
@@ -76,7 +78,7 @@ export class PurchaseServiceService implements OnModuleInit {
     const domains = createPurchaseServiceDto.domains.map(domain => domain.name);
     const allDomains = []
 
-    for (const data of this.readFile()) {
+    for (const data of this.readFile(this.filePath)) {
       if (data.verified) {
         for (const domainData of data.domains) {
           allDomains.push(domainData.name)
@@ -125,14 +127,13 @@ export class PurchaseServiceService implements OnModuleInit {
           user_id: purchaseId,
           email
         },
-        success_url: `${process.env.RETURN_URL}?success=true&purchase_id=${purchaseId}&session_id=`,
+        success_url: `${process.env.RETURN_URL}?success=true&purchase_id=${purchaseId}`,
         cancel_url: `${process.env.HOME_URL}?success=false`
       })
   
       this.writeFile(newPurchase);
       return {session, ...newPurchase};
     } catch(err) {
-      console.log(err)
       return {
         status: false,
         message: err.message
@@ -179,27 +180,47 @@ export class PurchaseServiceService implements OnModuleInit {
         }
   }
 
-  async verifyPayment(purchaseId: string, sessionId: string) {
-    const purchased = this.readFile().find(data => data.id == purchaseId);
+  async verifyPayment(purchaseId: string) {
+  
+    const purchased = this.readFile(this.filePath).find(data => data.id == purchaseId);
+
     if (purchased && purchased.verified) {
+      const users = this.readFile(this.userfilePath).length > 0 ? this.readFile(this.userfilePath): [{
+        email: purchased.email,
+        domains: [],
+        purchaseDate: purchased.purchasedDate
+      }];
+      for (const user of users) {
+        if (user.email === purchased.email) {
+          const names = user.domains.map(data => data.name)
+          for (const domain of purchased.domains) {
+            if (!names.includes(domain.name)) {
+              user.domains.push(domain)
+            }
+          }
+          break
+        }
+      }
+      fs.writeFileSync(this.userfilePath, JSON.stringify(users, null, 2), 'utf-8')
+      purchased.verified = true;
+      this.updateFile(purchased, true);
       return {
-        message: 'Already verified',
+        message: 'verified',
         status: true
       }
     }
-    if (purchased) {
-      purchased.verified = true;
-      this.updateFile(purchased, true);
-      return purchased;
+    return {
+      status: false,
+      message: 'Payment not verified'
     }
-    return {}
   }
 
   async webhook (req: Request, _signature) {
     try {
       const email = req.body.data.object.metadata.email?? null;
       const purchaseId = req.body.data.object.metadata.user_id?? null;
-      const purchaseData = this.readFile()
+      const purchaseData = this.readFile(this.filePath)
+      const users = this.readFile(this.userfilePath)
       for (const purchases of purchaseData) {
         if (purchases.email === email && purchases.id === purchaseId) {
           purchases.verified = true;

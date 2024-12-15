@@ -18,6 +18,9 @@ export class CreatePurchaseServiceDto {
 
     @IsBoolean()
     verified: boolean;
+    
+    @IsBoolean()
+    user_verified: boolean;
 
     @IsDate()
     checkoutDate: string

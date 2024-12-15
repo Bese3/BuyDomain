@@ -43,7 +43,7 @@ const features = [
 
 export default function Features() {
   return (
-    <Box sx={{ mt: 8 }}>
+    <Box sx={{ mt: 8, mb: 5 }}>
       <Typography variant="h4" component="h2" gutterBottom sx={{ color: 'white', textAlign: 'center', mb: 4 }}>
         Why Choose Us
       </Typography>

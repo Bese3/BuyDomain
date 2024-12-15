@@ -11,6 +11,7 @@ export class UsersModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ValidateUser)
-        .forRoutes({path: 'users', method: RequestMethod.POST})
+        .forRoutes({path: 'users/get-domains', method: RequestMethod.POST})
+        
   }
 }
