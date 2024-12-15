@@ -39,6 +39,7 @@ export default function ThankYouPage() {
       })
       .catch(err => {
         setError(err.message);
+        setLoading(false);
   
       })
     };
