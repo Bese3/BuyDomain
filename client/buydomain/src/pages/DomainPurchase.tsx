@@ -47,6 +47,7 @@ export default function DomainPurchase() {
 
   const handleSearch = (domain: string) => {
     setIsSearching(true);
+    console.log(process.env.REACT_APP_SERVER_URL);
     fetch(`${process.env.REACT_APP_SERVER_URL}/domain/search-domain/${domain}`,{
       method: 'GET',
     })
