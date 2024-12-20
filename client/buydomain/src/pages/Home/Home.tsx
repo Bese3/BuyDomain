@@ -98,7 +98,7 @@ export default function HomePage() {
           <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
             Find Your Perfect Domain
           </Typography>
-          <Typography variant="h5" component="p" gutterBottom sx={{ ml: 7, mr: 7, mb: 4, color: 'text.secondary' }}>
+          <Typography variant="h5" component="p" gutterBottom sx={{ ml: 7, mr: 7, mb: 4, color: 'white' }}>
             Secure your online presence with our wide selection of domain names.
             Easy search, instant purchase, and reliable hosting all in one place.
           </Typography>
