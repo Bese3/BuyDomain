@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, yona-erp]
+    runs-on: self-hosted
     container:
       image: docker:dind
       options: --privileged # Required for Docker-in-Docker
