@@ -1,30 +1,38 @@
-name: NodeJS with Grunt
+name: Deploy ERP to Production
 
 on:
   push:
-    branches: [ "main" ]
-  # pull_request:
-  #   branches: [ "main" ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: self-hosted
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-
+  deploy:
+    runs-on: [self-hosted, yona-erp]
+    container:
+      image: docker:dind
+      options: --privileged # Required for Docker-in-Docker
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock # Optional: Use host Docker daemon
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: |
+          apk add --no-cache bash git docker-compose
+        # Note: docker:dind uses Alpine Linux, so we use apk to install packages
 
-    - name: Build
-      run: |
-        cd server/buy-domain
-        npm install
-        npm run start
-        # grunt
+
+      - name: Build and Deploy Docker Compose
+        run: |
+          docker-compose version
+         
+        working-directory: ${{ github.workspace }}
+
+      - name: Clean up Docker
+        run: |
+          docker image prune -f
+          docker container prune -f
+        working-directory: ${{ github.workspace }}
+        if: always()
